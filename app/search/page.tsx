@@ -2,8 +2,6 @@
 import { TextField } from "@radix-ui/themes";
 import React from "react";
 import { IoSearchSharp } from "react-icons/io5";
-import Map from "../components/Map";
-import { hardcodedNodes } from "../map/nodes";
 
 const SearchPage = () => {
   return (
@@ -16,7 +14,6 @@ const SearchPage = () => {
             </TextField.Slot>
             <TextField.Input placeholder="Search a location…" />
           </TextField.Root>
-          <Map nodes={hardcodedNodes} />
         </div>
       </div>
     </div>

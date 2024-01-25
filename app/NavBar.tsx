@@ -1,5 +1,4 @@
 "use client";
-// NavBar.jsx
 import Link from "next/link";
 import React from "react";
 
@@ -32,10 +31,7 @@ const NavBar = () => {
               <Link href="/">Home</Link>
             </li>
             <li>
-              <Link href="/map">Map</Link>
-            </li>
-            <li>
-              <a>Routes</a>
+              <Link href="/search">Search</Link>
             </li>
           </ul>
         </div>
