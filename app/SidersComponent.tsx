@@ -22,11 +22,12 @@ const SlidersComponent = () => {
   };
 
   return (
-    <div className="flex justify-center items-center">
-      <div>
-        <label>
+    <div className="flex flex-col items-center space-y-4">
+      <div className="w-full">
+        <label className="block text-sm font-medium text-gray-700">
           A: {a.toFixed(2)}
           <input
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             type="range"
             min="0"
             max="1"
@@ -36,10 +37,11 @@ const SlidersComponent = () => {
           />
         </label>
       </div>
-      <div>
-        <label>
+      <div className="w-full">
+        <label className="block text-sm font-medium text-gray-700">
           B: {b.toFixed(2)}
           <input
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             type="range"
             min="0"
             max="1"
