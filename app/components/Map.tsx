@@ -17,19 +17,6 @@ interface MapProps {
   nodes: MapNode[];
 }
 
-const mapContainerStyle = {
-  position: "relative" as const,
-  width: "100%",
-  height: "600px",
-  margin: "auto",
-  borderRadius: "8px",
-};
-
-const mapOptions = {
-  scrollwheel: true,
-  mapTypeControl: false, // This disables the map/satellite toggle control
-};
-
 const Map: React.FC<MapProps> = ({ nodes }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!, // Ensure the API key is stored in your environment variables
@@ -39,12 +26,13 @@ const Map: React.FC<MapProps> = ({ nodes }) => {
   const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
 
   // Function to create path segments between each pair of nodes
-  const createPathSegments = () => {
+  const createPathSegments = useCallback(() => {
     return nodes.slice(0, -1).map((node, index) => {
       return [node.latLng, nodes[index + 1].latLng];
     });
-  };
+  }, [nodes]);
 
+  // Function to fit map bounds around all nodes
   const fitBoundsToNodes = useCallback(() => {
     if (!map) return;
     const bounds = new google.maps.LatLngBounds();
@@ -64,17 +52,17 @@ const Map: React.FC<MapProps> = ({ nodes }) => {
   if (!isLoaded) return <div>Loading Maps</div>;
 
   return (
-    <div style={mapContainerStyle}>
+    <div className="relative w-full" style={{ height: "600px" }}>
       <button
         className="btn absolute top-2.5 left-2.5 z-50 shadow-md"
         onClick={fitBoundsToNodes}
       >
         {/*
-        SVG ICON:Refresh Ccw Alt 2
+        SVG ICON: Refresh Ccw Alt 2
         COLLECTION: Dazzle Line Icons
         LICENSE: CC Attribution License
         URL: https://www.svgrepo.com/svg/533697/refresh-ccw-alt-2
-        AUTHOR: Dazzle UI*/}
+        AUTHOR: Dazzle UI */}
         <svg
           width="20px"
           height="20px"
@@ -92,8 +80,13 @@ const Map: React.FC<MapProps> = ({ nodes }) => {
         </svg>
       </button>
       <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        options={mapOptions}
+        mapContainerClassName="w-full h-full"
+        options={{
+          scrollwheel: true,
+          mapTypeControl: false, // This disables the map/satellite toggle control
+          minZoom: 2, // Prevents zooming out too far
+          maxZoom: 15, // Optional: Set a maximum zoom level if needed
+        }}
         onLoad={setMap}
         onClick={handleMapClick}
       >
