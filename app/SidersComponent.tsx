@@ -1,24 +1,28 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import debounce from "lodash/debounce";
 
 const SlidersComponent = () => {
   const [a, setA] = useState(0.5);
   const [b, setB] = useState(0.5);
 
-  useEffect(() => {
-    setB(1 - a);
-  }, [a]);
+  const debouncedSetA = useCallback(debounce(setA, 25), []);
+  const debouncedSetB = useCallback(debounce(setB, 25), []);
 
   useEffect(() => {
-    setA(1 - b);
-  }, [b]);
+    debouncedSetB(1 - a);
+  }, [a, debouncedSetB]);
+
+  useEffect(() => {
+    debouncedSetA(1 - b);
+  }, [b, debouncedSetA]);
 
   const handleAChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setA(parseFloat(event.target.value));
+    debouncedSetA(parseFloat(event.target.value));
   };
 
   const handleBChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setB(parseFloat(event.target.value));
+    debouncedSetB(parseFloat(event.target.value));
   };
 
   return (
@@ -27,13 +31,13 @@ const SlidersComponent = () => {
         <label className="block text-sm font-medium text-gray-700">
           A: {a.toFixed(2)}
           <input
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             type="range"
             min="0"
             max="1"
             step="0.01"
             value={a}
             onChange={handleAChange}
+            className="range range-primary" // DaisyUI class
           />
         </label>
       </div>
@@ -41,13 +45,13 @@ const SlidersComponent = () => {
         <label className="block text-sm font-medium text-gray-700">
           B: {b.toFixed(2)}
           <input
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             type="range"
             min="0"
             max="1"
             step="0.01"
             value={b}
             onChange={handleBChange}
+            className="range range-secondary" // DaisyUI class for a different color
           />
         </label>
       </div>

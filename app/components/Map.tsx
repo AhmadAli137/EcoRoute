@@ -2,22 +2,24 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { GoogleMap, useLoadScript, Polyline } from "@react-google-maps/api";
 import MarkerComponent from "./MarkerComponent"; // Adjust the import path as needed
+import { computeDistanceBetween } from "spherical-geometry-js"; // Make sure to install this package
 
 // Interface for MapNode
 interface MapNode {
   id: number;
   latLng: { lat: number; lng: number };
-  type: string;
-  amount: number;
-  risk: number;
+  type: string; // "Waste" or other types
+  amount: number; // Amount of plastic
+  risk: number; // Risk percentage
 }
 
 // Interface for the Map component's props
 interface MapProps {
   nodes: MapNode[];
+  onStatsCalculated: (totalDistance: number, plasticStats: any) => void;
 }
 
-const Map: React.FC<MapProps> = ({ nodes }) => {
+const Map: React.FC<MapProps> = ({ nodes, onStatsCalculated }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!, // Ensure the API key is stored in your environment variables
   });
@@ -38,11 +40,58 @@ const Map: React.FC<MapProps> = ({ nodes }) => {
     const bounds = new google.maps.LatLngBounds();
     nodes.forEach((node) => bounds.extend(node.latLng));
     map.fitBounds(bounds);
-  }, [map, nodes]); // Dependencies of fitBoundsToNodes
+  }, [map, nodes]);
+
+  // Calculate total distance and plastic stats
+  const calculateStats = useCallback(() => {
+    let totalDistance = 0;
+    let totalProduced = 0;
+    let totalLost = 0;
+
+    for (let i = 0; i < nodes.length - 1; i++) {
+      const start = new google.maps.LatLng(
+        nodes[i].latLng.lat,
+        nodes[i].latLng.lng
+      );
+      const end = new google.maps.LatLng(
+        nodes[i + 1].latLng.lat,
+        nodes[i + 1].latLng.lng
+      );
+      totalDistance += computeDistanceBetween(start, end);
+
+      if (nodes[i].type === "Waste") {
+        totalProduced += nodes[i].amount;
+      }
+
+      const risk = nodes[i + 1].risk;
+      totalLost += (computeDistanceBetween(start, end) / 1000) * risk; // Convert distance to km and multiply by risk
+    }
+
+    totalDistance = totalDistance / 1000; // Convert to kilometers
+    const totalInOcean = totalProduced - totalLost;
+
+    return { totalDistance, totalProduced, totalLost, totalInOcean };
+  }, [nodes]);
 
   useEffect(() => {
-    fitBoundsToNodes();
-  }, [fitBoundsToNodes]); // fitBoundsToNodes is now memoized
+    if (isLoaded && map) {
+      fitBoundsToNodes();
+      const { totalDistance, totalProduced, totalLost, totalInOcean } =
+        calculateStats();
+      onStatsCalculated(totalDistance, {
+        totalProduced,
+        totalLost,
+        totalInOcean,
+      });
+    }
+  }, [
+    isLoaded,
+    map,
+    nodes,
+    onStatsCalculated,
+    fitBoundsToNodes,
+    calculateStats,
+  ]);
 
   const handleMapClick = () => {
     setActiveNodeId(null); // Close any open info windows when the map is clicked
