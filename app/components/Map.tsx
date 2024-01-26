@@ -68,20 +68,20 @@ const Map: React.FC<MapProps> = ({ nodes, onStatsCalculated }) => {
     }
 
     totalDistance = totalDistance / 1000; // Convert to kilometers
-    const totalInOcean = totalProduced - totalLost;
+    const totalRecycled = totalProduced - totalLost;
 
-    return { totalDistance, totalProduced, totalLost, totalInOcean };
+    return { totalDistance, totalProduced, totalLost, totalRecycled };
   }, [nodes]);
 
   useEffect(() => {
     if (isLoaded && map) {
       fitBoundsToNodes();
-      const { totalDistance, totalProduced, totalLost, totalInOcean } =
+      const { totalDistance, totalProduced, totalLost, totalRecycled } =
         calculateStats();
       onStatsCalculated(totalDistance, {
         totalProduced,
         totalLost,
-        totalInOcean,
+        totalRecycled,
       });
     }
   }, [
